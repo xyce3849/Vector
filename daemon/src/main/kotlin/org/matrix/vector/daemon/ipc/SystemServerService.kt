@@ -148,7 +148,11 @@ object SystemServerService : Binder(), IBinder.DeathRecipient {
   }
 
   override fun binderDied() {
+    // KernelSU soft-reboot may restart system_server without restarting vectord.
+    // Drop the old framework binder state completely so the next system_server can
+    // attach as a fresh generation instead of inheriting a stale attachment flag.
     originService?.unlinkToDeath(this, 0)
     originService = null
+    systemServerRequested = false
   }
 }
